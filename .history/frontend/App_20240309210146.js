@@ -41,10 +41,7 @@ function App() {
         headerBackTitleVisible: false,
       }}
     />
-        <Stack.Screen 
-        name="Home" 
-        component={Home}
-        options={{ headerShown: false }}  />
+        <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
       </Stack.Navigator>
     </NavigationContainer>

@@ -18,7 +18,7 @@ const Home = ({ navigation, route }) => {
 
   const spinValue = useRef(new Animated.Value(0)).current;
   const moveAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(-100)).current;
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1], // Input range for spinValue
@@ -54,13 +54,6 @@ const Home = ({ navigation, route }) => {
         }),
       ]),
     ).start();
-  };
-  const prepareSlideOut = () => {
-    Animated.timing(slideAnim, {
-      toValue: -100, // or any value that moves it off-screen
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
   };
   const startSlideIn = () => {
     Animated.timing(slideAnim, {
@@ -192,9 +185,15 @@ const uploadRecording = async (uri) => {
 
   const handleNextText = () => {
     if (currentTextIndex < texts.length - 1) {
-      prepareSlideIn();  // Reset animation
-      setCurrentTextIndex(currentTextIndex + 1); // Set next text
-      startSlideIn(); // Start the slide-in animation
+      // Prepare the slide-in animation for the next text
+      prepareSlideIn();
+      
+      // Use a timeout to give the view time to go offscreen before updating the text index
+      setTimeout(() => {
+        setCurrentTextIndex(currentTextIndex + 1);
+        // Start the slide-in animation for the new text
+        startSlideIn();
+      }, 50); // This delay can be very short, just enough to allow the animation to start
     } else {
       Alert.alert('Completed', 'You have completed all texts!');
     }

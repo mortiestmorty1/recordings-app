@@ -19,32 +19,11 @@ function App() {
       <Stack.Screen
           name="FirstScreen"
           component={FirstScreen}
-          options={{ headerShown: false }} 
+          options={{ headerShown: false }} // This hides the header only for FirstScreen
         />
-      <Stack.Screen 
-        name="RegisterUser" 
-        component={RegisterUser}
-        options={{
-        headerShown: true,
-        headerTransparent: true,
-        headerTitle: '',
-        headerBackTitleVisible: false,
-      }}
-      />
-      <Stack.Screen 
-        name="Revisit" 
-        component={Revisit}
-        options={{
-        headerShown: true,
-        headerTransparent: true,
-        headerTitle: '',
-        headerBackTitleVisible: false,
-      }}
-    />
-        <Stack.Screen 
-        name="Home" 
-        component={Home}
-        options={{ headerShown: false }}  />
+        <Stack.Screen name="RegisterUser" component={RegisterUser} />
+        <Stack.Screen name="Revisit" component={Revisit} />
+        <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
       </Stack.Navigator>
     </NavigationContainer>

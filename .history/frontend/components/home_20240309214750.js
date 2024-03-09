@@ -18,7 +18,7 @@ const Home = ({ navigation, route }) => {
 
   const spinValue = useRef(new Animated.Value(0)).current;
   const moveAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(-100)).current;
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1], // Input range for spinValue
@@ -54,13 +54,6 @@ const Home = ({ navigation, route }) => {
         }),
       ]),
     ).start();
-  };
-  const prepareSlideOut = () => {
-    Animated.timing(slideAnim, {
-      toValue: -100, // or any value that moves it off-screen
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
   };
   const startSlideIn = () => {
     Animated.timing(slideAnim, {

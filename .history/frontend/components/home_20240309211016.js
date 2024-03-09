@@ -18,8 +18,6 @@ const Home = ({ navigation, route }) => {
 
   const spinValue = useRef(new Animated.Value(0)).current;
   const moveAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
-
   const spin = spinValue.interpolate({
     inputRange: [0, 1], // Input range for spinValue
     outputRange: ['0deg', '360deg'], // Output range maps to 0 to 360 degrees
@@ -55,20 +53,6 @@ const Home = ({ navigation, route }) => {
       ]),
     ).start();
   };
-  const prepareSlideOut = () => {
-    Animated.timing(slideAnim, {
-      toValue: -100, // or any value that moves it off-screen
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  };
-  const startSlideIn = () => {
-    Animated.timing(slideAnim, {
-      toValue: 0, // Slide to original position
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  };
   
   const stopSpinning = () => {
     spinValue.setValue(0);
@@ -77,9 +61,6 @@ const Home = ({ navigation, route }) => {
   const stopMoving = () => {
     moveAnim.setValue(0);
     Animated.timing(moveAnim).stop();
-  };
-  const prepareSlideIn = () => {
-    slideAnim.setValue(-100); // Reset to start position off-screen
   };
 
   useEffect(() => {
@@ -192,9 +173,7 @@ const uploadRecording = async (uri) => {
 
   const handleNextText = () => {
     if (currentTextIndex < texts.length - 1) {
-      prepareSlideIn();  // Reset animation
-      setCurrentTextIndex(currentTextIndex + 1); // Set next text
-      startSlideIn(); // Start the slide-in animation
+      setCurrentTextIndex(currentTextIndex + 1);
     } else {
       Alert.alert('Completed', 'You have completed all texts!');
     }
@@ -211,9 +190,7 @@ const uploadRecording = async (uri) => {
     <View style={styles.container}>
       {texts.length > 0 && (
         <View>
-          <Animated.Text style={[styles.text, { transform: [{ translateX: slideAnim }] }]}>
-              {texts[currentTextIndex]?.text}
-          </Animated.Text>
+          <Text style={styles.text}>{texts[currentTextIndex]?.text}</Text>
           <TouchableHighlight
           style={{ zIndex: 999,
             width:'100px',

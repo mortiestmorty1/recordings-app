@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
 import { Svg, Path } from 'react-native-svg';
-import background from '../assets/bg.png'; // Ensure this path is correct
+import background from '../assets/buttonbg.png'; // Ensure this path is correct
 
 const FirstScreen = ({ navigation }) => {
   return (
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     fontWeight: 'heavy',
   },
   simple:{
-    flexDirection: 'row', 
+    flexDirection: 'row', // Aligns children (text and button) horizontally
     alignItems: 'center',
   },
   btn2: {

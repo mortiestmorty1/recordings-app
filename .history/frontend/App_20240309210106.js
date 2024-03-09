@@ -31,20 +31,8 @@ function App() {
         headerBackTitleVisible: false,
       }}
       />
-      <Stack.Screen 
-        name="Revisit" 
-        component={Revisit}
-        options={{
-        headerShown: true,
-        headerTransparent: true,
-        headerTitle: '',
-        headerBackTitleVisible: false,
-      }}
-    />
-        <Stack.Screen 
-        name="Home" 
-        component={Home}
-        options={{ headerShown: false }}  />
+        <Stack.Screen name="Revisit" component={Revisit} />
+        <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
