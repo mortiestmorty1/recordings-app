@@ -11,7 +11,7 @@ const Home = ({ navigation, route }) => {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
-  const userId = route.params.userId; // Assuming userID is passed correctly through route.params
+  const userId = route.params.userId;
   const count = route.params.count;
   const name = route.params.name;
   const email = route.params.email;
@@ -21,23 +21,22 @@ const Home = ({ navigation, route }) => {
   const slideAnim = useRef(new Animated.Value(0)).current;
 
   const spin = spinValue.interpolate({
-    inputRange: [0, 1], // Input range for spinValue
-    outputRange: ['0deg', '360deg'], // Output range maps to 0 to 360 degrees
+    inputRange: [0, 1], 
+    outputRange: ['0deg', '360deg'], 
   });
   const translateY = moveAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -10], // Change -10 to the amount you want it to move
+    outputRange: [0, -10], 
   });
   const startSpinning = () => {
-    spinValue.setValue(0); // Reset the animation
+    spinValue.setValue(0); 
     Animated.loop(
       Animated.timing(spinValue, {
         toValue: 1,
         duration: 2000,
         easing: Easing.linear,
-        useNativeDriver: true, // Enable native driver for smoother animation
-      })
-    ).start();
+        useNativeDriver: true, 
+      })).start();
   };
   const startMoving = () => {
     Animated.loop(
@@ -57,14 +56,14 @@ const Home = ({ navigation, route }) => {
   };
   const prepareSlideOut = () => {
     Animated.timing(slideAnim, {
-      toValue: -100, // or any value that moves it off-screen
+      toValue: -100, 
       duration: 500,
       useNativeDriver: true,
     }).start();
   };
   const startSlideIn = () => {
     Animated.timing(slideAnim, {
-      toValue: 0, // Slide to original position
+      toValue: 0,
       duration: 500,
       useNativeDriver: true,
     }).start();
@@ -192,9 +191,9 @@ const uploadRecording = async (uri) => {
 
   const handleNextText = () => {
     if (currentTextIndex < texts.length - 1) {
-      prepareSlideIn();  // Reset animation
-      setCurrentTextIndex(currentTextIndex + 1); // Set next text
-      startSlideIn(); // Start the slide-in animation
+      prepareSlideIn(); 
+      setCurrentTextIndex(currentTextIndex + 1); 
+      startSlideIn(); 
     } else {
       Alert.alert('Completed', 'You have completed all texts!');
     }
