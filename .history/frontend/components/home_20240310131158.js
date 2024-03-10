@@ -171,26 +171,13 @@ const stopRecordingAndUpload = async () => {
     }
     stopSpinning(); 
     stopMoving();
-    if (recording._finalDurationMillis === undefined) {
-      console.log("Recording has already been stopped and unloaded.");
-      return;
-    }
     try {
       await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      console.log('Recording stopped and stored at', uri);
-  
-      // Play the end sound
-      await endSound.replayAsync();
-      
-      // Reset the recording state
       setRecording(null);
       setIsRecording(false);
-  
-      // Upload the recording
-      if (uri) {
-        await uploadRecording(uri);
-      }
+      console.log('Recording stopped and stored at', recording.getURI());
+      await uploadRecording(recording.getURI());
+      await endSound.replayAsync(); // Using replayAsync() to play the sound from the start
       // Now, move to the next text after uploading
       handleNextText();
     } catch (error) {

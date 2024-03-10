@@ -99,25 +99,22 @@ const Home = ({ navigation, route }) => {
   };
   const loadSounds = async () => {
     const { sound: startSound } = await Audio.Sound.createAsync(
-      require('../assets/start.mp3') // Replace with the actual path to your start sound
+      require('./path-to-start-sound.mp3') // Replace with the actual path to your start sound
     );
     setStartSound(startSound);
   
     const { sound: endSound } = await Audio.Sound.createAsync(
-      require('../assets/end.mp3') // Replace with the actual path to your end sound
+      require('./path-to-end-sound.mp3') // Replace with the actual path to your end sound
     );
     setEndSound(endSound);
   };
   useEffect(() => {
     loadSounds();
-    // Cleanup sounds when the component unmounts
+  
+    // Don't forget to unload the sounds when the component unmounts
     return () => {
-      if (startSound) {
-        startSound.unloadAsync();
-      }
-      if (endSound) {
-        endSound.unloadAsync();
-      }
+      startSound && startSound.unloadAsync();
+      endSound && endSound.unloadAsync();
     };
   }, []);
   useEffect(() => {
@@ -138,7 +135,7 @@ const Home = ({ navigation, route }) => {
         await stopRecording();
     }
     try {
-      await startSound.replayAsync();
+      await startSound.playAsync();
     } catch (error) {
       console.error('Failed to play start sound:', error);
     }
@@ -169,28 +166,21 @@ const stopRecordingAndUpload = async () => {
       console.log("No active recording to stop.");
       return;
     }
+    try {
+      await recording.stopAndUnloadAsync();
+      await endSound.playAsync(); 
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+    }
     stopSpinning(); 
     stopMoving();
-    if (recording._finalDurationMillis === undefined) {
-      console.log("Recording has already been stopped and unloaded.");
-      return;
-    }
     try {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
-      console.log('Recording stopped and stored at', uri);
-  
-      // Play the end sound
-      await endSound.replayAsync();
-      
-      // Reset the recording state
       setRecording(null);
       setIsRecording(false);
-  
-      // Upload the recording
-      if (uri) {
-        await uploadRecording(uri);
-      }
+      console.log('Recording stopped and stored at', uri);
+      await uploadRecording(uri);
       // Now, move to the next text after uploading
       handleNextText();
     } catch (error) {

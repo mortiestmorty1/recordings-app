@@ -12,10 +12,9 @@ const Home = ({ navigation, route }) => {
   const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const userId = route.params.userId;
+  const count = route.params.count;
   const name = route.params.name;
   const email = route.params.email;
-  const [startSound, setStartSound] = useState();
-  const [endSound, setEndSound] = useState();
 
   const spinValue = useRef(new Animated.Value(0)).current;
   const spinValueopposite = useRef(new Animated.Value(0)).current;
@@ -43,8 +42,6 @@ const Home = ({ navigation, route }) => {
         easing: Easing.linear,
         useNativeDriver: true, 
       })).start();
-  };
-  const startSpinningopposite = () => {
     spinValueopposite.setValue(0);
     Animated.loop(
       Animated.timing(spinValueopposite, {
@@ -88,7 +85,6 @@ const Home = ({ navigation, route }) => {
   const stopSpinning = () => {
     spinValue.setValue(0);
     Animated.timing(spinValue).stop();
-    Animated.timing(spinValueopposite).stop();
   };
   const stopMoving = () => {
     moveAnim.setValue(0);
@@ -97,29 +93,7 @@ const Home = ({ navigation, route }) => {
   const prepareSlideIn = () => {
     slideAnim.setValue(-100); // Reset to start position off-screen
   };
-  const loadSounds = async () => {
-    const { sound: startSound } = await Audio.Sound.createAsync(
-      require('../assets/start.mp3') // Replace with the actual path to your start sound
-    );
-    setStartSound(startSound);
-  
-    const { sound: endSound } = await Audio.Sound.createAsync(
-      require('../assets/end.mp3') // Replace with the actual path to your end sound
-    );
-    setEndSound(endSound);
-  };
-  useEffect(() => {
-    loadSounds();
-    // Cleanup sounds when the component unmounts
-    return () => {
-      if (startSound) {
-        startSound.unloadAsync();
-      }
-      if (endSound) {
-        endSound.unloadAsync();
-      }
-    };
-  }, []);
+
   useEffect(() => {
     fetchTexts();
     requestMicrophonePermission();
@@ -137,15 +111,8 @@ const Home = ({ navigation, route }) => {
     if (isRecording) {
         await stopRecording();
     }
-    try {
-      await startSound.replayAsync();
-    } catch (error) {
-      console.error('Failed to play start sound:', error);
-    }
     startSpinning()
-    startSpinningopposite()
     startMoving()
-
     try {
         await Audio.setAudioModeAsync({
             allowsRecordingIOS: true,
@@ -171,26 +138,13 @@ const stopRecordingAndUpload = async () => {
     }
     stopSpinning(); 
     stopMoving();
-    if (recording._finalDurationMillis === undefined) {
-      console.log("Recording has already been stopped and unloaded.");
-      return;
-    }
     try {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
-      console.log('Recording stopped and stored at', uri);
-  
-      // Play the end sound
-      await endSound.replayAsync();
-      
-      // Reset the recording state
       setRecording(null);
       setIsRecording(false);
-  
-      // Upload the recording
-      if (uri) {
-        await uploadRecording(uri);
-      }
+      console.log('Recording stopped and stored at', uri);
+      await uploadRecording(uri);
       // Now, move to the next text after uploading
       handleNextText();
     } catch (error) {
