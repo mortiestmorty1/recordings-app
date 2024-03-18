@@ -324,7 +324,6 @@ const uploadRecording = async (uri) => {
         <View>
           <Text style={styles.instructions}>
           Press the mic icon to start recording. Press again to stop and upload the recording.
-          you can also record again or move to the next recording.
         </Text>
           <Animated.Text style={[styles.text, { transform: [{ translateX: slideAnim }] }]}>
               {texts[currentTextIndex]?.text}
@@ -408,7 +407,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     margin: 20,
     color: 'black',
-    top: 70,
+    top: 50,
   },
   overlaySvg1: {
     zIndex: 2,
@@ -453,7 +452,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginHorizontal: 20,
     marginBottom: 10,
-    marginTop: 20,
   },
   actionContainer: {
     position: 'absolute',

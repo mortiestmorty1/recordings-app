@@ -22,9 +22,7 @@ const RecordingsList = ({ navigation, route }) => {
 
     const renderItem = ({ item,index }) => (
         <View style={styles.recordingItem}>
-          <TouchableOpacity style={styles.recordingItem} onPress={() => navigation.navigate('Recording', { voiceNoteUrl: item.voiceNoteUrl })}>
             <Text style={styles.recordingText}>Recording {index + 1}: {item.textString}</Text>
-          </TouchableOpacity>
         </View>
     );
 

@@ -200,6 +200,7 @@ const stopRecordingAndUpload = async () => {
       }
       return;
     }
+    // Instead of uploading, just save the URI in state
     setLastRecordingUri(uri);
   } catch (error) {
     console.error("Error stopping recording:", error);
@@ -225,6 +226,7 @@ const nextOrFinish = async () => {
       Alert.alert("No recording", "Please record something first.");
       return;
   }
+  // Proceed to upload the recording from state
   await uploadRecording(lastRecordingUri);
 
   if (currentTextIndex === texts.length - 1) {
@@ -237,6 +239,7 @@ const nextOrFinish = async () => {
   } else {
       setCurrentTextIndex(currentTextIndex + 1);
       setIsLastText(currentTextIndex + 1 === texts.length - 1);
+      // Clear the URI state to be ready for the next recording
       setLastRecordingUri(null);
   }
 };
@@ -267,7 +270,6 @@ const uploadRecording = async (uri) => {
     try {
         const response = await axios.post('http://localhost:3001/recordings/createRecordings', formData);
         console.log('Upload successful:', response.data);
-        handleNextText();
     } catch (error) {
         console.error('Upload failed:', error);
         Alert.alert("Upload Failed", `An error occurred: ${error.message}`);
@@ -324,7 +326,6 @@ const uploadRecording = async (uri) => {
         <View>
           <Text style={styles.instructions}>
           Press the mic icon to start recording. Press again to stop and upload the recording.
-          you can also record again or move to the next recording.
         </Text>
           <Animated.Text style={[styles.text, { transform: [{ translateX: slideAnim }] }]}>
               {texts[currentTextIndex]?.text}
@@ -370,6 +371,8 @@ const uploadRecording = async (uri) => {
         <Text style={styles.buttonText}>Record Again</Text>
         </ImageBackground>
       </TouchableOpacity>
+ 
+    
       <TouchableOpacity onPress={nextOrFinish} style={[styles.actionButton, styles.secondButton]}>
       <ImageBackground source={background} resizeMode="cover" style={styles.imageBackground}>
         <Text style={styles.buttonText}>{isLastText ? "Finish" : "Next Recording"}</Text>
@@ -408,7 +411,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     margin: 20,
     color: 'black',
-    top: 70,
+    top: 50,
   },
   overlaySvg1: {
     zIndex: 2,
@@ -453,7 +456,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginHorizontal: 20,
     marginBottom: 10,
-    marginTop: 20,
   },
   actionContainer: {
     position: 'absolute',

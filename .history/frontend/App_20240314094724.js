@@ -57,12 +57,7 @@ function App() {
         <Stack.Screen
         name="Recording"
         component={RecordingScreen}
-        options={{
-          headerShown: true,
-          headerTransparent: true,
-          headerTitle: '',
-          headerBackTitleVisible: false,
-        }}  />
+        options={{ headerShown: false }}  />
       </Stack.Navigator>
       
     </NavigationContainer>

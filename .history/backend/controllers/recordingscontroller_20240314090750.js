@@ -17,8 +17,7 @@ const recordingsfirebase = {
             return res.status(400).send('No file uploaded.');
         }
 
-        const { userId, textId, textString } = req.body;
-
+        const { userId, textId } = req.body; 
 
         try {
             const user = await User.findById(userId);
@@ -74,6 +73,7 @@ const recordingsfirebase = {
         }
     },
 
+    // Add more controller methods as needed...
 };
 
 module.exports = {

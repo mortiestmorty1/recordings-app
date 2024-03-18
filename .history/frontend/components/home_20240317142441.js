@@ -18,10 +18,6 @@ const Home = ({ navigation, route }) => {
   const [endSound, setEndSound] = useState();
   const [recordStartTime, setRecordStartTime] = useState(0);
   const [recordDuration, setRecordDuration] = useState(0);
-  const [isLastText, setIsLastText] = useState(false);
-  const [lastRecordingUri, setLastRecordingUri] = useState(null);
-
-
 
   const spinValue = useRef(new Animated.Value(0)).current;
   const spinValueopposite = useRef(new Animated.Value(0)).current;
@@ -101,22 +97,22 @@ const Home = ({ navigation, route }) => {
     Animated.timing(moveAnim).stop();
   };
   const prepareSlideIn = () => {
-    slideAnim.setValue(-100); 
+    slideAnim.setValue(-100); // Reset to start position off-screen
   };
   const loadSounds = async () => {
     const { sound: startSound } = await Audio.Sound.createAsync(
-      require('../assets/start.mp3') 
+      require('../assets/start.mp3') // Replace with the actual path to your start sound
     );
     setStartSound(startSound);
   
     const { sound: endSound } = await Audio.Sound.createAsync(
-      require('../assets/end.mp3') 
+      require('../assets/end.mp3') // Replace with the actual path to your end sound
     );
     setEndSound(endSound);
   };
   useEffect(() => {
     loadSounds();
-  
+    // Cleanup sounds when the component unmounts
     return () => {
       if (startSound) {
         startSound.unloadAsync();
@@ -139,112 +135,76 @@ const Home = ({ navigation, route }) => {
   };
 
   const startRecording = async () => {
+
     if (isRecording) {
         await stopRecording();
     }
     try {
-        await startSound.replayAsync();
-        setTimeout(async () => {
-            startSpinning();
-            startSpinningopposite();
-            startMoving();
-            try {
-                await Audio.setAudioModeAsync({
-                    allowsRecordingIOS: true,
-                    playsInSilentModeIOS: true,
-                });
-                const recording = new Audio.Recording();
-                await recording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
-                await recording.startAsync();
-                setRecording(recording);
-                setIsRecording(true);
-                setRecordStartTime(Date.now());
-            } catch (err) {
-                console.error('Failed to start recording:', err);
-                Alert.alert("Error", "Failed to start recording. Please try again.");
-            }
-        }, 1000);
+      startSound.replayAsync();
     } catch (error) {
-        console.error('Failed to play start sound:', error);
+      console.error('Failed to play start sound:', error);
+    }
+    startSpinning()
+    startSpinningopposite()
+    startMoving()
+
+    try {
+        await Audio.setAudioModeAsync({
+            allowsRecordingIOS: true,
+            playsInSilentModeIOS: true,
+        });
+
+        const recording = new Audio.Recording();
+        await recording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+        await recording.startAsync();
+        setRecording(recording);
+        setIsRecording(true);
+        setRecordStartTime(Date.now());
+    } catch (err) {
+        console.error('Failed to start recording:', err);
+        Alert.alert("Error", "Failed to start recording. Please try again.");
     }
 };
-
 
 const stopRecordingAndUpload = async () => {
-  if (!recording) {
-    console.log("No active recording to stop.");
-    return;
-  }
-  stopSpinning();
-  stopMoving();
-  if (recording._finalDurationMillis === undefined) {
-    console.log("Recording has already been stopped and unloaded.");
-    return;
-  }
-  try {
-    await recording.stopAndUnloadAsync();
-    const uri = recording.getURI();
-    console.log('Recording stopped and stored at', uri);
-    await endSound.replayAsync();
-    setRecording(null);
-    setIsRecording(false);
-    const endTime = Date.now();
-    const duration = (endTime - recordStartTime) / 1000;
-    setRecordDuration(duration);
-    console.log('Recording duration:', duration);
-
-    if (duration < 3) {
-      Alert.alert("Recording Too Short", "Please record again. Recording should be longer than 3 seconds.");
-      if (uri) {
-        await FileSystem.deleteAsync(uri);
-      }
+    if (!recording) {
+      console.log("No active recording to stop.");
       return;
     }
-    setLastRecordingUri(uri);
-  } catch (error) {
-    console.error("Error stopping recording:", error);
-    Alert.alert("Error", "Failed to stop the recording. Please try again.");
-  }
-};
-  const recordAgain = async () => {
-    if (recording) {
-        await stopRecording();
-        const uri = recording.getURI();
+    stopSpinning(); 
+    stopMoving();
+    if (recording._finalDurationMillis === undefined) {
+      console.log("Recording has already been stopped and unloaded.");
+      return;
+    }
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      console.log('Recording stopped and stored at', uri);
+      await endSound.replayAsync();
+      setRecording(null);
+      setIsRecording(false);
+      const endTime = Date.now();
+      const duration = (endTime - recordStartTime) / 1000; // Duration in seconds
+      setRecordDuration(duration);
+      console.log('Recording duration:', duration);
+      if (duration < 3) {
+        Alert.alert("Recording Too Short", "Please record again. Recording should be longer than 3 seconds.");
+      
         if (uri) {
-            await FileSystem.deleteAsync(uri);
+          await FileSystem.deleteAsync(uri);
         }
-        setRecording(null);
-        setIsRecording(false);
+        return;
+      }
+      if (uri) {
+        await uploadRecording(uri);
+      }
+      handleNextText();
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      Alert.alert("Error", "Failed to stop the recording. Please try again.");
     }
-
-    await startRecording();
-};
-
-const nextOrFinish = async () => {
-  if (!lastRecordingUri) {
-      Alert.alert("No recording", "Please record something first.");
-      return;
-  }
-  await uploadRecording(lastRecordingUri);
-
-  if (currentTextIndex === texts.length - 1) {
-      console.log('Finish');
-      navigation.navigate('RecordingsList', {
-          userId: userId,
-          name: name,
-          email: email,
-      });
-  } else {
-      setCurrentTextIndex(currentTextIndex + 1);
-      setIsLastText(currentTextIndex + 1 === texts.length - 1);
-      setLastRecordingUri(null);
-  }
-};
-
-useEffect(() => {
-    setIsLastText(currentTextIndex === texts.length - 1);
-}, [currentTextIndex, texts.length]);
-
+  };
 
 const uploadRecording = async (uri) => {
     const fileType = 'audio/mp3';
@@ -267,7 +227,6 @@ const uploadRecording = async (uri) => {
     try {
         const response = await axios.post('http://localhost:3001/recordings/createRecordings', formData);
         console.log('Upload successful:', response.data);
-        handleNextText();
     } catch (error) {
         console.error('Upload failed:', error);
         Alert.alert("Upload Failed", `An error occurred: ${error.message}`);
@@ -324,7 +283,6 @@ const uploadRecording = async (uri) => {
         <View>
           <Text style={styles.instructions}>
           Press the mic icon to start recording. Press again to stop and upload the recording.
-          you can also record again or move to the next recording.
         </Text>
           <Animated.Text style={[styles.text, { transform: [{ translateX: slideAnim }] }]}>
               {texts[currentTextIndex]?.text}
@@ -361,23 +319,6 @@ const uploadRecording = async (uri) => {
         </View>
         </View> 
       )}
-   <View style={styles.actionContainer}>
-  
-    <View style={styles.buttonsContainer}>
-   
-      <TouchableOpacity onPress={recordAgain} style={[styles.actionButton, styles.firstButton]}>
-      <ImageBackground source={background} resizeMode="cover" style={styles.imageBackground}>
-        <Text style={styles.buttonText}>Record Again</Text>
-        </ImageBackground>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={nextOrFinish} style={[styles.actionButton, styles.secondButton]}>
-      <ImageBackground source={background} resizeMode="cover" style={styles.imageBackground}>
-        <Text style={styles.buttonText}>{isLastText ? "Finish" : "Next Recording"}</Text>
-        </ImageBackground>
-      </TouchableOpacity>
-
-    </View>
-    </View>
        <TouchableOpacity style={styles.logoutbtn} 
         onPress={handleLogout}
         >
@@ -408,7 +349,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     margin: 20,
     color: 'black',
-    top: 70,
+    top: 50,
   },
   overlaySvg1: {
     zIndex: 2,
@@ -435,7 +376,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    bottom: 5,
+    bottom: 20,
   },
   logouttext: {
     color: 'white',
@@ -453,39 +394,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginHorizontal: 20,
     marginBottom: 10,
-    marginTop: 20,
   },
-  actionContainer: {
-    position: 'absolute',
-    bottom: 150,
-    width: '100%',
-  },
-  buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    padding: 10,
-  },
-  actionButton: {
-    width: 150,
-    height: 50,
-    borderRadius: 10,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-    top: 10,
-  },
-  firstButton: {
-    marginRight: 10,
-  },
-  secondButton: {
-    marginLeft: 10,
-  },
-  buttonText: {
-    color: 'white',
-    textAlign: 'center',
-  },
-
 });
 
 export default Home;

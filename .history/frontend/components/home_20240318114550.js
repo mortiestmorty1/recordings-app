@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     margin: 20,
     color: 'black',
-    top: 70,
+    top: 50,
   },
   overlaySvg1: {
     zIndex: 2,
@@ -453,7 +453,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginHorizontal: 20,
     marginBottom: 10,
-    marginTop: 20,
   },
   actionContainer: {
     position: 'absolute',

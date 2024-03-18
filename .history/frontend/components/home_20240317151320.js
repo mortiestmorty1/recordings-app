@@ -19,8 +19,6 @@ const Home = ({ navigation, route }) => {
   const [recordStartTime, setRecordStartTime] = useState(0);
   const [recordDuration, setRecordDuration] = useState(0);
   const [isLastText, setIsLastText] = useState(false);
-  const [lastRecordingUri, setLastRecordingUri] = useState(null);
-
 
 
   const spinValue = useRef(new Animated.Value(0)).current;
@@ -171,44 +169,48 @@ const Home = ({ navigation, route }) => {
 
 
 const stopRecordingAndUpload = async () => {
-  if (!recording) {
-    console.log("No active recording to stop.");
-    return;
-  }
-  stopSpinning();
-  stopMoving();
-  if (recording._finalDurationMillis === undefined) {
-    console.log("Recording has already been stopped and unloaded.");
-    return;
-  }
-  try {
-    await recording.stopAndUnloadAsync();
-    const uri = recording.getURI();
-    console.log('Recording stopped and stored at', uri);
-    await endSound.replayAsync();
-    setRecording(null);
-    setIsRecording(false);
-    const endTime = Date.now();
-    const duration = (endTime - recordStartTime) / 1000;
-    setRecordDuration(duration);
-    console.log('Recording duration:', duration);
-
-    if (duration < 3) {
-      Alert.alert("Recording Too Short", "Please record again. Recording should be longer than 3 seconds.");
-      if (uri) {
-        await FileSystem.deleteAsync(uri);
-      }
+    if (!recording) {
+      console.log("No active recording to stop.");
       return;
     }
-    setLastRecordingUri(uri);
-  } catch (error) {
-    console.error("Error stopping recording:", error);
-    Alert.alert("Error", "Failed to stop the recording. Please try again.");
-  }
-};
+    stopSpinning(); 
+    stopMoving();
+    if (recording._finalDurationMillis === undefined) {
+      console.log("Recording has already been stopped and unloaded.");
+      return;
+    }
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      console.log('Recording stopped and stored at', uri);
+      await endSound.replayAsync();
+      setRecording(null);
+      setIsRecording(false);
+      const endTime = Date.now();
+      const duration = (endTime - recordStartTime) / 1000;
+      setRecordDuration(duration);
+      console.log('Recording duration:', duration);
+      if (duration < 3) {
+        Alert.alert("Recording Too Short", "Please record again. Recording should be longer than 3 seconds.");
+      
+        if (uri) {
+          await FileSystem.deleteAsync(uri);
+        }
+        return;
+      }
+      if (uri) {
+        await uploadRecording(uri);
+      }
+      handleNextText();
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      Alert.alert("Error", "Failed to stop the recording. Please try again.");
+    }
+  };
   const recordAgain = async () => {
+    // Stop and delete the current recording if it exists
     if (recording) {
-        await stopRecording();
+        await stopRecording(); // Make sure this function stops and unloads the recording
         const uri = recording.getURI();
         if (uri) {
             await FileSystem.deleteAsync(uri);
@@ -221,24 +223,23 @@ const stopRecordingAndUpload = async () => {
 };
 
 const nextOrFinish = async () => {
-  if (!lastRecordingUri) {
-      Alert.alert("No recording", "Please record something first.");
-      return;
-  }
-  await uploadRecording(lastRecordingUri);
+    if (!recording) {
+        Alert.alert("No recording", "Please record something first.");
+        return;
+    }
+    await stopRecordingAndUpload();
 
-  if (currentTextIndex === texts.length - 1) {
-      console.log('Finish');
-      navigation.navigate('RecordingsList', {
+    if (currentTextIndex === texts.length - 1) {
+        console.log('Finish');
+        navigation.navigate('RecordingsList', {
           userId: userId,
           name: name,
           email: email,
-      });
-  } else {
-      setCurrentTextIndex(currentTextIndex + 1);
-      setIsLastText(currentTextIndex + 1 === texts.length - 1);
-      setLastRecordingUri(null);
-  }
+        });
+    } else {
+        setCurrentTextIndex(currentTextIndex + 1);
+        setIsLastText(currentTextIndex + 1 === texts.length - 1);
+    }
 };
 
 useEffect(() => {
@@ -267,7 +268,6 @@ const uploadRecording = async (uri) => {
     try {
         const response = await axios.post('http://localhost:3001/recordings/createRecordings', formData);
         console.log('Upload successful:', response.data);
-        handleNextText();
     } catch (error) {
         console.error('Upload failed:', error);
         Alert.alert("Upload Failed", `An error occurred: ${error.message}`);
@@ -324,7 +324,6 @@ const uploadRecording = async (uri) => {
         <View>
           <Text style={styles.instructions}>
           Press the mic icon to start recording. Press again to stop and upload the recording.
-          you can also record again or move to the next recording.
         </Text>
           <Animated.Text style={[styles.text, { transform: [{ translateX: slideAnim }] }]}>
               {texts[currentTextIndex]?.text}
@@ -370,6 +369,8 @@ const uploadRecording = async (uri) => {
         <Text style={styles.buttonText}>Record Again</Text>
         </ImageBackground>
       </TouchableOpacity>
+ 
+    
       <TouchableOpacity onPress={nextOrFinish} style={[styles.actionButton, styles.secondButton]}>
       <ImageBackground source={background} resizeMode="cover" style={styles.imageBackground}>
         <Text style={styles.buttonText}>{isLastText ? "Finish" : "Next Recording"}</Text>
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     margin: 20,
     color: 'black',
-    top: 70,
+    top: 50,
   },
   overlaySvg1: {
     zIndex: 2,
@@ -453,7 +454,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginHorizontal: 20,
     marginBottom: 10,
-    marginTop: 20,
   },
   actionContainer: {
     position: 'absolute',
