@@ -16,9 +16,8 @@ const RegisterUser = ({ navigation }) => {
       email,
       consent,
     };
-  
     try {
-      const response = await fetch('http://localhost:3001/user/create', {
+      const response = await fetch('https://shoaib-app-75a4a2e9e1e5.herokuapp.com/user/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,14 +32,13 @@ const RegisterUser = ({ navigation }) => {
       }
       const jsonResponse = await response.json();
       const { userId, count, name: responseName } = jsonResponse;
-  
+
       navigation.navigate('Home', { 
         userId: userId, 
         count: count,
         name: responseName,
         email: email
-      });
-  
+    })
       Alert.alert("Success", "User registered successfully!");
     } catch (error) {
       console.error(error);
@@ -157,7 +155,7 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   logo: {
-    bottom: 50,
+    bottom: 20,
   },
   registerbtn: {
     width: 250,
@@ -179,7 +177,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   termsbtn: {
-    width: 250,
+    width: "70%",
     height: 50,
     borderRadius: 10,
     overflow: 'hidden',
@@ -196,8 +194,8 @@ const styles = StyleSheet.create({
     color: 'blue',
     fontSize: 15,
     textDecorationLine: 'underline',
-    top : 0,
-    right: 21
+    bottom: 20,
+    left: 50
   },
 
 });
