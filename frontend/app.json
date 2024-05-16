@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "echoCollect",
+    "slug": "recorder",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "bc0dba83-693c-440b-b486-bb4fcf064e1b"
+      }
+    }
+  },
+  "android": {
+    "package": "com.shoaib123.recorder",
+    "versionCode": 1,
+    "permissions": ["android.permission.RECORD_AUDIO"]
+  }
+}
+
